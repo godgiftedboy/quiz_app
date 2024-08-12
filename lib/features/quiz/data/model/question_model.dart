@@ -5,12 +5,14 @@ class QuestionModel {
   final String correctAnswer;
   final List<String> incorrectAnswers;
   final List<String> options;
+  String? userAnswer;
 
   QuestionModel({
     required this.questionText,
     required this.correctAnswer,
     required this.incorrectAnswers,
     required this.options,
+    this.userAnswer,
   }) {
     options.shuffle();
   }

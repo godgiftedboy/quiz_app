@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quiz_app/core/db_client.dart';
 import 'package:quiz_app/core/helpers.dart';
 import 'package:quiz_app/features/auth/presentation/views/screens/login_page.dart';
 import 'package:quiz_app/features/quiz/data/model/question_model.dart';
@@ -11,7 +12,14 @@ import 'package:quiz_app/features/quiz/presentation/views/widgets/options_contai
 import 'package:quiz_app/utils/utils.dart';
 
 class QuizPage extends ConsumerStatefulWidget {
-  const QuizPage({super.key});
+  const QuizPage({
+    super.key,
+    required this.username,
+    required this.dbClient,
+  });
+
+  final String username;
+  final DbClient dbClient;
 
   @override
   ConsumerState<QuizPage> createState() => _QuizPageState();
@@ -113,7 +121,7 @@ class _QuizPageState extends ConsumerState<QuizPage> {
         body: questionList.isEmpty
             ? const Center(child: CircularProgressIndicator())
             : Column(
-                children: [
+                children: <Widget>[
                   const SizedBox(
                     height: 10,
                   ),
@@ -260,11 +268,17 @@ class _QuizPageState extends ConsumerState<QuizPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Quiz Completed! Your Score: $score"),
+          content:
+              Text("Quiz Completed! ${widget.username} Your Score: $score"),
         ),
       );
+
+      //to save score
+      ref.watch(dbClientProvider).saveScore(widget.username, score.toString());
+
       quesionIndex = 0;
-      pushReplacement(context, const LoginPage());
+      Navigator.of(context).popUntil((route) => false);
+      navigation(context, LoginPage());
     }
     resetOptionsColor();
 
