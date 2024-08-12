@@ -27,10 +27,12 @@ class OptionsContainer extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
+          Expanded(
+            child: Text(
+              title,
               overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              style: const TextStyle(),
             ),
           ),
           CircleAvatar(
