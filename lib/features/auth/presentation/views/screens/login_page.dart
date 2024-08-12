@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_app/core/app_const.dart';
+import 'package:quiz_app/features/quiz/presentation/views/screens/quiz_page.dart';
 import 'package:quiz_app/utils/utils.dart';
 
 class LoginPage extends StatelessWidget {
@@ -56,7 +57,6 @@ class LoginPage extends StatelessWidget {
                         fontSize: 12,
                         fontWeight: FontWeight.normal,
                       ),
-
                       enabledBorder: OutlineInputBorder(
                         borderSide: const BorderSide(
                           width: 0.7,
@@ -71,13 +71,6 @@ class LoginPage extends StatelessWidget {
                         ),
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      // border: OutlineInputBorder(
-                      //   borderSide: BorderSide(
-                      //     width: 0.5,
-                      //     color: Colors.white,
-                      //   ),
-                      //   borderRadius: BorderRadius.circular(8),
-                      // ),
                     ),
                   ),
                 ],
@@ -87,6 +80,9 @@ class LoginPage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 InkWell(
+                  onTap: () {
+                    navigation(context, const QuizPage());
+                  },
                   child: ButtonWidget(
                     title: "Start",
                     backgroundColor: AppConst.yellowColor,
@@ -98,6 +94,9 @@ class LoginPage extends StatelessWidget {
                     title: "View Quiz Result",
                     backgroundColor: AppConst.lightGreyColor,
                   ),
+                ),
+                const SizedBox(
+                  height: 10,
                 ),
               ],
             ),

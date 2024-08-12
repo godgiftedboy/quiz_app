@@ -13,7 +13,7 @@ class ButtonWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       width: getWidth(context),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       decoration: BoxDecoration(
@@ -36,4 +36,30 @@ class ButtonWidget extends StatelessWidget {
       ),
     );
   }
+}
+
+void pop(BuildContext context) {
+  Navigator.pop(context);
+}
+
+//Navigations
+void navigation(BuildContext context, Widget widget) {
+  Navigator.push(context, MaterialPageRoute(builder: (ctx) => widget));
+}
+
+pushReplacement(BuildContext context, Widget widget) {
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (ctx) => widget,
+    ),
+  );
+}
+
+void pushAndRemoveUntil(BuildContext context, Widget widget) {
+  Navigator.pushAndRemoveUntil(
+    context,
+    MaterialPageRoute(builder: (ctx) => widget),
+    (route) => false,
+  );
 }

@@ -1,0 +1,276 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quiz_app/core/helpers.dart';
+import 'package:quiz_app/features/auth/presentation/views/screens/login_page.dart';
+import 'package:quiz_app/features/quiz/presentation/logic/answer_controller.dart';
+import 'package:quiz_app/features/quiz/presentation/views/widgets/options_container.dart';
+import 'package:quiz_app/utils/utils.dart';
+
+class QuizPage extends ConsumerStatefulWidget {
+  const QuizPage({super.key});
+
+  @override
+  ConsumerState<QuizPage> createState() => _QuizPageState();
+}
+
+class _QuizPageState extends ConsumerState<QuizPage> {
+  List<Color> optionsColor = [
+    Colors.white,
+    Colors.white,
+    Colors.white,
+    Colors.white,
+  ];
+  List<bool> buttonStates = List<bool>.filled(4, true);
+  int quesionIndex = 0;
+  int maxQuestionIndex = 0;
+  //max index maintained to implement previous question visit functionality
+  //so that user can answer again only after reaching the max question index
+
+  int seconds = 30;
+  int score = 0;
+
+  Timer? timer;
+  startTimer() {
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        if (seconds > 0) {
+          seconds--;
+        } else {
+          timer.cancel();
+          nextQuestion();
+        }
+      });
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    startTimer();
+  }
+
+  @override
+  void dispose() {
+    timer!.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    List<String> questions = [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10",
+    ];
+
+    final isAnswered = ref.watch(isAnsweredProvider);
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: const Color.fromARGB(255, 213, 230, 239),
+        appBar: AppBar(
+          backgroundColor: const Color.fromARGB(255, 213, 230, 239),
+          title: Text("${quesionIndex + 1}/10"),
+          centerTitle: true,
+          leadingWidth: getWidth(context) * 0.13,
+          leading: InkWell(
+            onTap: () {
+              if (quesionIndex == 0) {
+                ref.watch(isAnsweredProvider.notifier).setAnsweredFalse();
+                enableAllButtons();
+                resetOptionsColor();
+                pop(context);
+              } else {
+                ref.watch(isAnsweredProvider.notifier).setAnsweredTrue();
+                if (maxQuestionIndex < quesionIndex) {
+                  maxQuestionIndex = quesionIndex;
+                }
+
+                setState(() {
+                  quesionIndex--;
+                  timer!.cancel();
+
+                  disableAllButtons();
+                  resetOptionsColor();
+                });
+              }
+            },
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.arrow_back,
+                  semanticLabel: "Previous",
+                ),
+                SizedBox(width: 2),
+                Text("Previous"),
+              ],
+            ),
+          ),
+        ),
+        body: Column(
+          children: [
+            const SizedBox(
+              height: 10,
+            ),
+            Stack(
+              children: [
+                Container(
+                  width: getWidth(context),
+                  margin: const EdgeInsets.fromLTRB(20, 45, 20, 20),
+                  height: 180,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Center(
+                    child: Text(
+                      questions[quesionIndex],
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ),
+                ),
+                Center(
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                        ),
+                        height: 60,
+                        width: 60,
+                        child: CircularProgressIndicator(
+                          value: seconds / 30,
+                          backgroundColor: Colors.grey,
+                          strokeWidth: 6.0,
+                        ),
+                      ),
+                      Text(
+                        '${seconds}s',
+                        style: const TextStyle(fontSize: 24.0),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: 4,
+                itemBuilder: (context, index) {
+                  return InkWell(
+                    onTap: buttonStates[
+                            index] //checking states to enable or disable buttons
+                        ? () {
+                            ref
+                                .watch(isAnsweredProvider.notifier)
+                                .setAnsweredTrue();
+                            disableAllButtons();
+                            setState(() {
+                              if (index != 1) {
+                                //if tapped index is not correct answer
+                                //highting it with red as incorrect answer tapped
+                                optionsColor[index] = Colors.red;
+                              } else {
+                                score++;
+                              }
+                            });
+                          }
+                        : null,
+                    child: !isAnswered
+                        ? OptionsContainer(
+                            title: index.toString(),
+                          )
+                        : index == 1 //assuming index 1 as correct answer
+                            ? OptionsContainer(
+                                title: index.toString(),
+                                backgroundColor: Colors.green,
+                                checkAnswereIcon: const Icon(Icons.check),
+                              )
+                            : OptionsContainer(
+                                title: index.toString(),
+                                backgroundColor: optionsColor[index],
+                                checkAnswereIcon: const Icon(Icons.close),
+                              ),
+                  );
+                },
+              ),
+            ),
+            InkWell(
+              onTap: nextQuestion,
+              child: const ButtonWidget(
+                title: "Next",
+                backgroundColor: Colors.black,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void enableAllButtons() {
+    setState(() {
+      buttonStates = List<bool>.filled(buttonStates.length, true);
+    });
+  }
+
+  void disableAllButtons() {
+    setState(() {
+      buttonStates = List<bool>.filled(buttonStates.length, false);
+    });
+  }
+
+  void resetOptionsColor() {
+    for (var i = 0; i < optionsColor.length; i++) {
+      optionsColor[i] = Colors.white;
+    }
+  }
+
+  void nextQuestion() async {
+    ref.watch(isAnsweredProvider.notifier).setAnsweredTrue();
+
+    // await Future.delayed(const Duration(seconds: 1));
+    setState(() {});
+    if (quesionIndex < 9) {
+      quesionIndex++;
+    } else {
+      ref.watch(isAnsweredProvider.notifier).setAnsweredFalse();
+      enableAllButtons();
+      resetOptionsColor();
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Completed Quiz: $score"),
+        ),
+      );
+      quesionIndex = 0;
+      pushReplacement(context, const LoginPage());
+    }
+    resetOptionsColor();
+
+    timer!.cancel();
+    if (quesionIndex > maxQuestionIndex) {
+      ref.watch(isAnsweredProvider.notifier).setAnsweredFalse();
+
+      seconds = 30;
+      startTimer();
+
+      enableAllButtons();
+    }
+  }
+}
