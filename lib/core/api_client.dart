@@ -1,7 +1,10 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_app/core/api_const.dart';
 import 'package:quiz_app/core/api_method_enum.dart';
 import 'package:quiz_app/core/exception_handle.dart';
+
+final apiClientProvider = Provider((ref) => ApiClient());
 
 class ApiClient {
   Future request({

@@ -27,7 +27,12 @@ class OptionsContainer extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title),
+          Text(
+            title,
+            style: const TextStyle(
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
           CircleAvatar(
             radius: 10,
             child: checkAnswereIcon,

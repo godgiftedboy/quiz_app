@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_app/core/helpers.dart';
 import 'package:quiz_app/features/auth/presentation/views/screens/login_page.dart';
+import 'package:quiz_app/features/quiz/data/model/question_model.dart';
 import 'package:quiz_app/features/quiz/presentation/logic/answer_controller.dart';
+import 'package:quiz_app/features/quiz/presentation/logic/question_controller.dart';
 import 'package:quiz_app/features/quiz/presentation/views/widgets/options_container.dart';
 import 'package:quiz_app/utils/utils.dart';
 
@@ -59,18 +61,10 @@ class _QuizPageState extends ConsumerState<QuizPage> {
 
   @override
   Widget build(BuildContext context) {
-    List<String> questions = [
-      "1",
-      "2",
-      "3",
-      "4",
-      "5",
-      "6",
-      "7",
-      "8",
-      "9",
-      "10",
-    ];
+    final List<QuestionModel> questionList =
+        ref.read(questionControllerProvider);
+
+    // print("Questions are loaded here: $questionList");
 
     final isAnswered = ref.watch(isAnsweredProvider);
     return SafeArea(
@@ -116,108 +110,119 @@ class _QuizPageState extends ConsumerState<QuizPage> {
             ),
           ),
         ),
-        body: Column(
-          children: [
-            const SizedBox(
-              height: 10,
-            ),
-            Stack(
-              children: [
-                Container(
-                  width: getWidth(context),
-                  margin: const EdgeInsets.fromLTRB(20, 45, 20, 20),
-                  height: 180,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
+        body: questionList.isEmpty
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+                children: [
+                  const SizedBox(
+                    height: 10,
                   ),
-                  child: Center(
-                    child: Text(
-                      questions[quesionIndex],
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                  ),
-                ),
-                Center(
-                  child: Stack(
-                    alignment: Alignment.center,
+                  Stack(
                     children: [
                       Container(
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
+                        width: getWidth(context),
+                        margin: const EdgeInsets.fromLTRB(20, 45, 20, 20),
+                        padding: const EdgeInsets.all(12),
+                        height: 180,
+                        decoration: BoxDecoration(
                           color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                        height: 60,
-                        width: 60,
-                        child: CircularProgressIndicator(
-                          value: seconds / 30,
-                          backgroundColor: Colors.grey,
-                          strokeWidth: 6.0,
+                        child: Center(
+                          child: Text(
+                            questionList[quesionIndex].questionText,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
                         ),
                       ),
-                      Text(
-                        '${seconds}s',
-                        style: const TextStyle(fontSize: 24.0),
+                      Center(
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Container(
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white,
+                              ),
+                              height: 60,
+                              width: 60,
+                              child: CircularProgressIndicator(
+                                value: seconds / 30,
+                                backgroundColor: Colors.grey,
+                                strokeWidth: 6.0,
+                              ),
+                            ),
+                            Text(
+                              '${seconds}s',
+                              style: const TextStyle(fontSize: 24.0),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                ),
-              ],
-            ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: 4,
-                itemBuilder: (context, index) {
-                  return InkWell(
-                    onTap: buttonStates[
-                            index] //checking states to enable or disable buttons
-                        ? () {
-                            ref
-                                .watch(isAnsweredProvider.notifier)
-                                .setAnsweredTrue();
-                            disableAllButtons();
-                            setState(() {
-                              if (index != 1) {
-                                //if tapped index is not correct answer
-                                //highting it with red as incorrect answer tapped
-                                optionsColor[index] = Colors.red;
-                              } else {
-                                score++;
-                              }
-                            });
-                          }
-                        : null,
-                    child: !isAnswered
-                        ? OptionsContainer(
-                            title: index.toString(),
-                          )
-                        : index == 1 //assuming index 1 as correct answer
-                            ? OptionsContainer(
-                                title: index.toString(),
-                                backgroundColor: Colors.green,
-                                checkAnswereIcon: const Icon(Icons.check),
-                              )
-                            : OptionsContainer(
-                                title: index.toString(),
-                                backgroundColor: optionsColor[index],
-                                checkAnswereIcon: const Icon(Icons.close),
-                              ),
-                  );
-                },
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: questionList[quesionIndex].options.length,
+                      itemBuilder: (context, index) {
+                        List<String> options = [
+                          ...questionList[quesionIndex].options
+                        ];
+                        // options.shuffle();
+                        return InkWell(
+                          onTap: buttonStates[
+                                  index] //checking states to enable or disable buttons
+                              ? () {
+                                  ref
+                                      .watch(isAnsweredProvider.notifier)
+                                      .setAnsweredTrue();
+                                  disableAllButtons();
+                                  setState(() {
+                                    if (options[index] !=
+                                        questionList[quesionIndex]
+                                            .correctAnswer) {
+                                      //if tapped index is not correct answer
+                                      //highting it with red as incorrect answer tapped
+                                      optionsColor[index] = Colors.red;
+                                    } else {
+                                      score++;
+                                    }
+                                  });
+                                }
+                              : null,
+                          child: !isAnswered
+                              ? OptionsContainer(
+                                  title: options[index],
+                                )
+                              : options[index] ==
+                                      questionList[quesionIndex]
+                                          .correctAnswer //assuming index 1 as correct answer
+                                  ? OptionsContainer(
+                                      title: options[index],
+                                      backgroundColor: Colors.green,
+                                      checkAnswereIcon: const Icon(Icons.check),
+                                    )
+                                  : OptionsContainer(
+                                      title: options[index],
+                                      backgroundColor: optionsColor[index],
+                                      checkAnswereIcon: const Icon(Icons.close),
+                                    ),
+                        );
+                      },
+                    ),
+                  ),
+                  InkWell(
+                    onTap: nextQuestion,
+                    child: const ButtonWidget(
+                      title: "Next",
+                      backgroundColor: Colors.black,
+                    ),
+                  ),
+                ],
               ),
-            ),
-            InkWell(
-              onTap: nextQuestion,
-              child: const ButtonWidget(
-                title: "Next",
-                backgroundColor: Colors.black,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -255,7 +260,7 @@ class _QuizPageState extends ConsumerState<QuizPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Completed Quiz: $score"),
+          content: Text("Quiz Completed! Your Score: $score"),
         ),
       );
       quesionIndex = 0;
