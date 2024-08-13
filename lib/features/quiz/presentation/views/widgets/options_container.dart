@@ -35,10 +35,7 @@ class OptionsContainer extends StatelessWidget {
               style: const TextStyle(),
             ),
           ),
-          CircleAvatar(
-            radius: 10,
-            child: checkAnswereIcon,
-          ),
+          checkAnswereIcon ?? const SizedBox.shrink()
         ],
       ),
     );

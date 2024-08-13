@@ -115,16 +115,12 @@ class LoginPage extends ConsumerWidget with ValidationMixin {
                     if (_formKey.currentState!.validate()) {
                       ref.watch(dbClientProvider).getUserList().then((value) {
                         if (!value.contains(nameController.text)) {
-                          ref
-                              .watch(dbClientProvider)
-                              .saveUser(nameController.text);
-
                           if (context.mounted) {
                             navigation(
                                 context,
                                 QuizPage(
                                   username: nameController.text,
-                                  dbClient: ref.read(dbClientProvider),
+                                  // dbClient: ref.read(dbClientProvider),
                                 ));
                           }
                         } else {
@@ -136,7 +132,7 @@ class LoginPage extends ConsumerWidget with ValidationMixin {
                                 context,
                                 QuizPage(
                                   username: nameController.text,
-                                  dbClient: ref.read(dbClientProvider),
+                                  // dbClient: ref.read(dbClientProvider),
                                 ));
                           }
                         }

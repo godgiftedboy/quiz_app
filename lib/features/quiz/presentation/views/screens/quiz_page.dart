@@ -8,6 +8,7 @@ import 'package:quiz_app/features/auth/presentation/views/screens/login_page.dar
 import 'package:quiz_app/features/quiz/data/model/question_model.dart';
 import 'package:quiz_app/features/quiz/presentation/logic/answer_controller.dart';
 import 'package:quiz_app/features/quiz/presentation/logic/question_controller.dart';
+import 'package:quiz_app/features/quiz/presentation/logic/user_answer_controller.dart';
 import 'package:quiz_app/features/quiz/presentation/views/widgets/options_container.dart';
 import 'package:quiz_app/utils/utils.dart';
 
@@ -15,11 +16,9 @@ class QuizPage extends ConsumerStatefulWidget {
   const QuizPage({
     super.key,
     required this.username,
-    required this.dbClient,
   });
 
   final String username;
-  final DbClient dbClient;
 
   @override
   ConsumerState<QuizPage> createState() => _QuizPageState();
@@ -69,12 +68,13 @@ class _QuizPageState extends ConsumerState<QuizPage> {
 
   @override
   Widget build(BuildContext context) {
-    final List<QuestionModel> questionList =
-        ref.read(questionControllerProvider);
+    final questionState = ref.watch(questionControllerProvider);
 
     // print("Questions are loaded here: $questionList");
 
     final isAnswered = ref.watch(isAnsweredProvider);
+    List<QuestionModel> answerList = ref.watch(userAnswerProvider);
+
     return SafeArea(
       child: Scaffold(
         backgroundColor: const Color.fromARGB(255, 213, 230, 239),
@@ -118,119 +118,161 @@ class _QuizPageState extends ConsumerState<QuizPage> {
             ),
           ),
         ),
-        body: questionList.isEmpty
-            ? const Center(child: CircularProgressIndicator())
-            : Column(
-                children: <Widget>[
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Stack(
-                    children: [
-                      Container(
-                        width: getWidth(context),
-                        margin: const EdgeInsets.fromLTRB(20, 45, 20, 20),
-                        padding: const EdgeInsets.all(12),
-                        height: 180,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Center(
-                          child: Text(
-                            questionList[quesionIndex].questionText,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
+        body: questionState.when(
+          data: (questionList) {
+            return questionList.isEmpty
+                ? const Center(child: Text("No questions available"))
+                : Column(
+                    children: <Widget>[
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Stack(
+                        children: [
+                          Container(
+                            width: getWidth(context),
+                            margin: const EdgeInsets.fromLTRB(20, 45, 20, 20),
+                            padding: const EdgeInsets.all(12),
+                            height: 180,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Center(
+                              child: Text(
+                                questionList[quesionIndex].questionText.text,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                              ),
                             ),
                           ),
+                          Center(
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Container(
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white,
+                                  ),
+                                  height: 60,
+                                  width: 60,
+                                  child: CircularProgressIndicator(
+                                    value: seconds / 30,
+                                    backgroundColor: Colors.grey,
+                                    strokeWidth: 6.0,
+                                  ),
+                                ),
+                                Text(
+                                  '${seconds}s',
+                                  style: const TextStyle(fontSize: 24.0),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: questionList[quesionIndex].options.length,
+                          itemBuilder: (context, index) {
+                            List<String> options = [
+                              ...questionList[quesionIndex].options
+                            ];
+                            // options.shuffle();
+                            return InkWell(
+                              onTap: buttonStates[
+                                      index] //checking states to enable or disable buttons
+                                  ? () {
+                                      disableAllButtons();
+                                      setState(() {
+                                        if (options[index] !=
+                                            questionList[quesionIndex]
+                                                .correctAnswer) {
+                                          //if tapped index is not correct answer
+                                          //highting it with red as incorrect answer tapped
+                                          optionsColor[index] = Colors.red;
+                                        } else {
+                                          score++;
+                                        }
+                                      });
+                                      ref
+                                          .watch(userAnswerProvider.notifier)
+                                          .addAnswerToList(
+                                            QuestionModel(
+                                              questionText:
+                                                  questionList[quesionIndex]
+                                                      .questionText,
+                                              correctAnswer:
+                                                  questionList[quesionIndex]
+                                                      .correctAnswer,
+                                              incorrectAnswers:
+                                                  questionList[quesionIndex]
+                                                      .incorrectAnswers,
+                                              options: options,
+                                              userAnswer: options[index],
+                                            ),
+                                          );
+                                      ref
+                                          .watch(isAnsweredProvider.notifier)
+                                          .setAnsweredTrue();
+                                      print("here is the ${answerList}");
+                                    }
+                                  : null,
+                              child: !isAnswered
+                                  ? OptionsContainer(
+                                      title: options[index],
+                                    )
+                                  : options[index] ==
+                                          questionList[quesionIndex]
+                                              .correctAnswer //assuming index 1 as correct answer
+                                      ? OptionsContainer(
+                                          title: options[index],
+                                          backgroundColor: Colors.green,
+                                          checkAnswereIcon:
+                                              const Icon(Icons.check_circle),
+                                        )
+                                      : quesionIndex <= maxQuestionIndex &&
+                                              answerList[quesionIndex]
+                                                      .userAnswer ==
+                                                  options[index]
+                                          ? OptionsContainer(
+                                              title: options[index],
+                                              backgroundColor: Colors.red,
+                                              checkAnswereIcon:
+                                                  const Icon(Icons.cancel),
+                                            )
+                                          : OptionsContainer(
+                                              title: options[index],
+                                              backgroundColor:
+                                                  optionsColor[index],
+                                              checkAnswereIcon:
+                                                  const Icon(Icons.cancel),
+                                            ),
+                            );
+                          },
                         ),
                       ),
-                      Center(
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Container(
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.white,
-                              ),
-                              height: 60,
-                              width: 60,
-                              child: CircularProgressIndicator(
-                                value: seconds / 30,
-                                backgroundColor: Colors.grey,
-                                strokeWidth: 6.0,
-                              ),
-                            ),
-                            Text(
-                              '${seconds}s',
-                              style: const TextStyle(fontSize: 24.0),
-                            ),
-                          ],
+                      InkWell(
+                        onTap:
+                            ref.read(isAnsweredProvider) ? nextQuestion : null,
+                        child: ButtonWidget(
+                          title: "Next",
+                          backgroundColor: ref.read(isAnsweredProvider)
+                              ? Colors.black
+                              : Colors.grey,
                         ),
                       ),
                     ],
-                  ),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: questionList[quesionIndex].options.length,
-                      itemBuilder: (context, index) {
-                        List<String> options = [
-                          ...questionList[quesionIndex].options
-                        ];
-                        // options.shuffle();
-                        return InkWell(
-                          onTap: buttonStates[
-                                  index] //checking states to enable or disable buttons
-                              ? () {
-                                  ref
-                                      .watch(isAnsweredProvider.notifier)
-                                      .setAnsweredTrue();
-                                  disableAllButtons();
-                                  setState(() {
-                                    if (options[index] !=
-                                        questionList[quesionIndex]
-                                            .correctAnswer) {
-                                      //if tapped index is not correct answer
-                                      //highting it with red as incorrect answer tapped
-                                      optionsColor[index] = Colors.red;
-                                    } else {
-                                      score++;
-                                    }
-                                  });
-                                }
-                              : null,
-                          child: !isAnswered
-                              ? OptionsContainer(
-                                  title: options[index],
-                                )
-                              : options[index] ==
-                                      questionList[quesionIndex]
-                                          .correctAnswer //assuming index 1 as correct answer
-                                  ? OptionsContainer(
-                                      title: options[index],
-                                      backgroundColor: Colors.green,
-                                      checkAnswereIcon: const Icon(Icons.check),
-                                    )
-                                  : OptionsContainer(
-                                      title: options[index],
-                                      backgroundColor: optionsColor[index],
-                                      checkAnswereIcon: const Icon(Icons.close),
-                                    ),
-                        );
-                      },
-                    ),
-                  ),
-                  InkWell(
-                    onTap: nextQuestion,
-                    child: const ButtonWidget(
-                      title: "Next",
-                      backgroundColor: Colors.black,
-                    ),
-                  ),
-                ],
-              ),
+                  );
+          },
+          error: (error, stackTrace) => Center(
+            child: Text('Error: $error'),
+          ),
+          loading: () => const Center(child: CircularProgressIndicator()),
+        ),
       ),
     );
   }
@@ -273,8 +315,23 @@ class _QuizPageState extends ConsumerState<QuizPage> {
         ),
       );
 
+      //save user
+      ref.read(dbClientProvider).saveUser(widget.username);
+
       //to save score
-      ref.watch(dbClientProvider).saveScore(widget.username, score.toString());
+      ref.read(dbClientProvider).saveScore(widget.username, score.toString());
+
+      //refresh questions on every round
+      ref.read(questionControllerProvider.notifier).resetState();
+      ref.read(questionControllerProvider.notifier).getAllQuestions();
+
+      //to save answers to shared prefs for result
+      ref
+          .read(dbClientProvider)
+          .saveUserAnswers(widget.username, ref.read(userAnswerProvider));
+
+      //reset state that store answers
+      ref.read(userAnswerProvider.notifier).resetState();
 
       quesionIndex = 0;
       Navigator.of(context).popUntil((route) => false);
