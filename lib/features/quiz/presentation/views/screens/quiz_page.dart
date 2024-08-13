@@ -49,6 +49,16 @@ class _QuizPageState extends ConsumerState<QuizPage> {
         } else {
           timer.cancel();
           nextQuestion();
+          ref.read(userAnswerProvider.notifier).addAnswerToList(QuestionModel(
+              questionText: Question(text: "Times up"),
+              correctAnswer: "null",
+              incorrectAnswers: [],
+              options: [
+                "No question and answer stored",
+                "because",
+                "You didn't answer"
+              ],
+              userAnswer: "no answer"));
         }
       });
     });
