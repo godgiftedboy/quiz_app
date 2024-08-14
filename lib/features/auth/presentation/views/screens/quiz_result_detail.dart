@@ -96,19 +96,20 @@ class _QuizResultDetailState extends State<QuizResultDetail> {
                     ? OptionsContainer(
                         title: options[index],
                         backgroundColor: Colors.green,
-                        checkAnswereIcon: const Icon(Icons.check_circle),
+                        checkAnswereIcon:
+                            const Icon(Icons.check_circle_outline),
                       )
                     : options[index] ==
                             widget.userAnswerList[quesionIndex].userAnswer
                         ? OptionsContainer(
                             title: options[index],
                             backgroundColor: Colors.red,
-                            checkAnswereIcon: const Icon(Icons.cancel),
+                            checkAnswereIcon: const Icon(Icons.cancel_outlined),
                           )
                         : OptionsContainer(
                             title: options[index],
                             backgroundColor: optionsColor[index],
-                            checkAnswereIcon: const Icon(Icons.cancel),
+                            checkAnswereIcon: const Icon(Icons.cancel_outlined),
                           );
               },
             ),

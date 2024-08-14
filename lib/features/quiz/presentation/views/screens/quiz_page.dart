@@ -97,6 +97,8 @@ class _QuizPageState extends ConsumerState<QuizPage> {
             onTap: () {
               if (quesionIndex == 0) {
                 ref.watch(isAnsweredProvider.notifier).setAnsweredFalse();
+                ref.invalidate(questionControllerProvider);
+                ref.invalidate(userAnswerProvider);
                 enableAllButtons();
                 resetOptionsColor();
                 pop(context);
@@ -228,7 +230,6 @@ class _QuizPageState extends ConsumerState<QuizPage> {
                                       ref
                                           .watch(isAnsweredProvider.notifier)
                                           .setAnsweredTrue();
-                                      print("here is the ${answerList}");
                                     }
                                   : null,
                               child: !isAnswered
@@ -241,8 +242,8 @@ class _QuizPageState extends ConsumerState<QuizPage> {
                                       ? OptionsContainer(
                                           title: options[index],
                                           backgroundColor: Colors.green,
-                                          checkAnswereIcon:
-                                              const Icon(Icons.check_circle),
+                                          checkAnswereIcon: const Icon(
+                                              Icons.check_circle_outlined),
                                         )
                                       : quesionIndex <= maxQuestionIndex &&
                                               answerList[quesionIndex]
@@ -251,15 +252,15 @@ class _QuizPageState extends ConsumerState<QuizPage> {
                                           ? OptionsContainer(
                                               title: options[index],
                                               backgroundColor: Colors.red,
-                                              checkAnswereIcon:
-                                                  const Icon(Icons.cancel),
+                                              checkAnswereIcon: const Icon(
+                                                  Icons.cancel_outlined),
                                             )
                                           : OptionsContainer(
                                               title: options[index],
                                               backgroundColor:
                                                   optionsColor[index],
-                                              checkAnswereIcon:
-                                                  const Icon(Icons.cancel),
+                                              checkAnswereIcon: const Icon(
+                                                  Icons.cancel_outlined),
                                             ),
                             );
                           },
@@ -278,9 +279,11 @@ class _QuizPageState extends ConsumerState<QuizPage> {
                     ],
                   );
           },
-          error: (error, stackTrace) => Center(
-            child: Text('Error: $error'),
-          ),
+          error: (error, stackTrace) {
+            return Center(
+              child: Text('Error: $error'),
+            );
+          },
           loading: () => const Center(child: CircularProgressIndicator()),
         ),
       ),

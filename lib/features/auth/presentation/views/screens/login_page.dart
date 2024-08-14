@@ -20,7 +20,6 @@ class LoginPage extends ConsumerWidget with ValidationMixin {
         ref.watch(dbClientProvider).getScore(value[i]).then((value) {
           // setState(() {});
           scoreList = [...scoreList, value];
-          print(scoreList);
         });
       }
     });
@@ -113,6 +112,7 @@ class LoginPage extends ConsumerWidget with ValidationMixin {
                 InkWell(
                   onTap: () {
                     if (_formKey.currentState!.validate()) {
+                      keyBoardDismiss(context);
                       ref.watch(dbClientProvider).getUserList().then((value) {
                         if (!value.contains(nameController.text)) {
                           if (context.mounted) {
@@ -146,8 +146,8 @@ class LoginPage extends ConsumerWidget with ValidationMixin {
                 ),
                 InkWell(
                   onTap: () {
+                    keyBoardDismiss(context);
                     ref.watch(dbClientProvider).getUserList().then((value) {
-                      print("object: $scoreList");
                       if (context.mounted) {
                         navigation(
                           context,

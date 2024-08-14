@@ -38,6 +38,10 @@ class ButtonWidget extends StatelessWidget {
   }
 }
 
+void keyBoardDismiss(BuildContext context) {
+  return FocusScope.of(context).unfocus();
+}
+
 void pop(BuildContext context) {
   Navigator.pop(context);
 }

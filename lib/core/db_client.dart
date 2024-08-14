@@ -18,7 +18,6 @@ class DbClient {
   Future<List<String>> getUserList() async {
     final prefs = await SharedPreferences.getInstance();
     var userList = prefs.getStringList("userList") ?? [];
-    print("From getuserList: $userList");
     return userList;
   }
 
