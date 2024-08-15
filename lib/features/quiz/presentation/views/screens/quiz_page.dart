@@ -143,7 +143,7 @@ class _QuizPageState extends ConsumerState<QuizPage> {
                       Stack(
                         children: [
                           ...questionList.map((value) {
-                            return SizedBox.shrink();
+                            return const SizedBox.shrink();
                           }),
                           Container(
                             width: getWidth(context),

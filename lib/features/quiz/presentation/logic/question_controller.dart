@@ -38,7 +38,6 @@ import 'package:quiz_app/features/quiz/data/repository/question_repository.dart'
 class QuestionController extends AsyncNotifier<List<QuestionModel>> {
   @override
   FutureOr<List<QuestionModel>> build() {
-    state = const AsyncValue.loading();
     return getAllQuestions();
   }
 
