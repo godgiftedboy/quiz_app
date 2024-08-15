@@ -18,8 +18,6 @@ class OptionsContainer extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      width: getWidth(context),
-      height: getHeight(context) * 0.05,
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(20),
@@ -27,11 +25,14 @@ class OptionsContainer extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: getWidth(context) * 0.7,
+            ),
             child: Text(
               title,
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
+              // overflow: TextOverflow.ellipsis,
+              // maxLines: 1,
               style: const TextStyle(),
             ),
           ),
