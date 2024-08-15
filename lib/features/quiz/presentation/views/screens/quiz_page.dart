@@ -5,12 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_app/core/db_client.dart';
 import 'package:quiz_app/core/helpers.dart';
 import 'package:quiz_app/features/auth/presentation/views/screens/login_page.dart';
-import 'package:quiz_app/features/quiz/data/model/question_model.dart';
-import 'package:quiz_app/features/quiz/presentation/logic/answer_controller.dart';
-import 'package:quiz_app/features/quiz/presentation/logic/question_controller.dart';
-import 'package:quiz_app/features/quiz/presentation/logic/user_answer_controller.dart';
-import 'package:quiz_app/features/quiz/presentation/views/widgets/options_container.dart';
+import 'package:quiz_app/utils/async_value_widget.dart';
+
 import 'package:quiz_app/utils/utils.dart';
+
+import '../../../quiz.dart';
 
 class QuizPage extends ConsumerStatefulWidget {
   const QuizPage({
@@ -55,8 +54,9 @@ class _QuizPageState extends ConsumerState<QuizPage> {
               incorrectAnswers: [],
               options: [
                 "No question and answer stored",
-                "because",
-                "You didn't answer"
+                "You should answer to store the answer",
+                "You didn't answer",
+                "Please answer before timer end"
               ],
               userAnswer: "no answer"));
         }
@@ -92,7 +92,7 @@ class _QuizPageState extends ConsumerState<QuizPage> {
           backgroundColor: const Color.fromARGB(255, 213, 230, 239),
           title: Text("${quesionIndex + 1}/10"),
           centerTitle: true,
-          leadingWidth: getWidth(context) * 0.13,
+          leadingWidth: getWidth(context) * 0.3,
           leading: InkWell(
             onTap: () {
               if (quesionIndex == 0) {
@@ -130,7 +130,8 @@ class _QuizPageState extends ConsumerState<QuizPage> {
             ),
           ),
         ),
-        body: questionState.when(
+        body: MyAsyncValueWidget(
+          value: questionState,
           data: (questionList) {
             return questionList.isEmpty
                 ? const Center(child: Text("No questions available"))
@@ -141,6 +142,9 @@ class _QuizPageState extends ConsumerState<QuizPage> {
                       ),
                       Stack(
                         children: [
+                          ...questionList.map((value) {
+                            return SizedBox.shrink();
+                          }),
                           Container(
                             width: getWidth(context),
                             margin: const EdgeInsets.fromLTRB(20, 45, 20, 20),
@@ -279,12 +283,6 @@ class _QuizPageState extends ConsumerState<QuizPage> {
                     ],
                   );
           },
-          error: (error, stackTrace) {
-            return Center(
-              child: Text('Error: $error'),
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator()),
         ),
       ),
     );

@@ -1,9 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quiz_app/core/api_client.dart';
-import 'package:quiz_app/core/api_const.dart';
-import 'package:quiz_app/features/quiz/data/model/question_model.dart';
+
+import '../../quiz.dart';
 
 abstract class QuestionDataSource {
   Future<List<QuestionModel>> getQuestionsDs();

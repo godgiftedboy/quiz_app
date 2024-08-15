@@ -31,7 +31,7 @@ class _QuizResultDetailState extends State<QuizResultDetail> {
       appBar: AppBar(
         title: Text("${quesionIndex + 1}/10"),
         centerTitle: true,
-        leadingWidth: getWidth(context) * 0.13,
+        leadingWidth: getWidth(context) * 0.3,
         leading: InkWell(
           onTap: () {
             if (quesionIndex == 0) {
