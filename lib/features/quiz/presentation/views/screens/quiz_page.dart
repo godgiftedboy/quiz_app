@@ -333,8 +333,9 @@ class _QuizPageState extends ConsumerState<QuizPage> {
       ref.read(dbClientProvider).saveScore(widget.username, score.toString());
 
       //refresh questions on every round
-      ref.read(questionControllerProvider.notifier).resetState();
-      ref.read(questionControllerProvider.notifier).getAllQuestions();
+      // ref.read(questionControllerProvider.notifier).resetState();
+      // ref.read(questionControllerProvider.notifier).getAllQuestions();
+      //-made it autodispose so no need to reset state manually
 
       //to save answers to shared prefs for result
       ref

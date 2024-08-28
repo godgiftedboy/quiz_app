@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -42,6 +44,10 @@ class ApiClient {
                       : await dio.post(path, data: data);
       return result.data;
     } on DioException catch (e) {
+      if (kDebugMode) {
+        log("Error is ${e.error}");
+        log("Error Response is ${e.response}");
+      }
       throw DioExceptionHandle.fromDioError(e);
     }
   }

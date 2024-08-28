@@ -35,29 +35,28 @@ import 'package:quiz_app/features/quiz/data/repository/question_repository.dart'
 //   ),
 // );
 
-class QuestionController extends AsyncNotifier<List<QuestionModel>> {
+class QuestionController extends AutoDisposeAsyncNotifier<List<QuestionModel>> {
   @override
-  FutureOr<List<QuestionModel>> build() {
+  FutureOr<List<QuestionModel>> build() async {
+    // state = const AsyncValue.loading();
     return getAllQuestions();
   }
 
-  getAllQuestions() async {
+  Future<List<QuestionModel>> getAllQuestions() async {
     final result = await ref.read(questionRepositoryProvider).getQuestions();
     return result.fold(
       (l) {
-        state = AsyncValue.error(l.message, StackTrace.fromString(l.message));
+        // state = AsyncValue.error(l.message, StackTrace.current);
+        throw l.message;
       },
       (r) {
-        state = AsyncValue.data(r);
+        // state = AsyncValue.data(r);
+        return r;
       },
     );
-  }
-
-  resetState() {
-    state = const AsyncValue.data([]);
   }
 }
 
 final questionControllerProvider =
-    AsyncNotifierProvider<QuestionController, List<QuestionModel>>(
+    AutoDisposeAsyncNotifierProvider<QuestionController, List<QuestionModel>>(
         QuestionController.new);

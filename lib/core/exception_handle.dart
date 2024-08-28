@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 class DioExceptionHandle implements Exception {
   DioExceptionHandle.fromDioError(DioException dioError) {
     switch (dioError.type) {
-      case DioExceptionType.connectionTimeout:
+      case DioExceptionType.connectionError:
         message = "Connection failed due to internet connection";
         break;
 
@@ -11,6 +11,7 @@ class DioExceptionHandle implements Exception {
         message = _handleError(
             dioError.response!.statusCode!, dioError.response!.data);
         break;
+
       default:
         message = "Something went wrong";
         break;
